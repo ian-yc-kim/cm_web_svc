@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
 import * as customerService from '../api/customerService'
 import { AUTH_TOKEN_KEY } from '../api/http'
@@ -19,30 +19,36 @@ export interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [token, setToken] = useState<string | null>(null)
-  const [user, setUser] = useState<User | null>(null)
-  const isAuthenticated = Boolean(token)
+function getInitialToken(): string | null {
+  try {
+    return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(AUTH_TOKEN_KEY) : null
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('AuthProvider:', error)
+    return null
+  }
+}
 
-  useEffect(() => {
+function getInitialUser(): User | null {
+  try {
+    const u = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('AUTH_USER') : null
+    if (!u) return null
     try {
-      const t = sessionStorage.getItem(AUTH_TOKEN_KEY)
-      const u = sessionStorage.getItem('AUTH_USER')
-      if (t) {
-        setToken(t)
-        if (u) {
-          try {
-            setUser(JSON.parse(u))
-          } catch (e) {
-            setUser(null)
-          }
-        }
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('AuthProvider:', error)
+      return JSON.parse(u)
+    } catch (e) {
+      return null
     }
-  }, [])
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('AuthProvider:', error)
+    return null
+  }
+}
+
+export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+  const [token, setToken] = useState<string | null>(() => getInitialToken())
+  const [user, setUser] = useState<User | null>(() => getInitialUser())
+  const isAuthenticated = Boolean(token)
 
   const login = async (cred: customerService.LoginRequest): Promise<void> => {
     try {

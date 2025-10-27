@@ -5,6 +5,8 @@ import React from 'react'
 import { AuthProvider } from './contexts/AuthContext'
 import SignupPage from './pages/SignupPage'
 import LoginPage from './pages/LoginPage'
+import CustomerPage from './pages/CustomerPage'
+import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App(): JSX.Element {
   return (
@@ -14,7 +16,10 @@ export default function App(): JSX.Element {
           <Route index element={<Navigate to="/login" replace />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="signup" element={<SignupPage />} />
-          <Route path="customer" element={<div>Customer Home</div>} />
+          <Route
+            path="customer"
+            element={<ProtectedRoute><CustomerPage /></ProtectedRoute>}
+          />
         </Route>
       </Routes>
     </AuthProvider>

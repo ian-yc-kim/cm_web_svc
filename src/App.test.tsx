@@ -31,12 +31,12 @@ describe('App routing', () => {
     expect(screen.getByText(/Login Page/i)).toBeInTheDocument()
   })
 
-  it('renders customer page at /customer', () => {
+  it('redirects unauthenticated /customer to /login', () => {
     render(
       <MemoryRouter initialEntries={["/customer"]}>
         <App />
       </MemoryRouter>
     )
-    expect(screen.getByText(/Customer Home/i)).toBeInTheDocument()
+    expect(screen.getByText(/Login Page/i)).toBeInTheDocument()
   })
 })
