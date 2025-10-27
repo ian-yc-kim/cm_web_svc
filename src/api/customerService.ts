@@ -95,7 +95,6 @@ function extractAxiosDetails(err: unknown): { message: string; status?: number; 
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
   try {
     const resp = await http.post<LoginResponse>('/login', payload)
-    // Use optional chaining in case mocked http returns undefined
     return (resp && (resp as any).data) ?? resp
   } catch (err: unknown) {
     if (isAxiosLike(err)) {
@@ -111,6 +110,92 @@ export async function signup(payload: SignupRequest): Promise<SignupResponse> {
   try {
     const resp = await http.post<SignupResponse>('/signup', payload)
     return (resp && (resp as any).data) ?? resp
+  } catch (err: unknown) {
+    if (isAxiosLike(err)) {
+      const { message, status, body } = extractAxiosDetails(err)
+      throw new ApiError(message, status, body)
+    }
+    const anyErr = err as any
+    throw new ApiError(anyErr?.message ? String(anyErr.message) : 'Unknown error')
+  }
+}
+
+// New customer-related interfaces
+export interface Customer {
+  customer_id: string
+  customer_name: string
+  customer_contact: string
+  customer_address: string
+  managed_by: string
+  [k: string]: unknown
+}
+
+export interface CustomerRequest {
+  customer_name: string
+  customer_contact: string
+  customer_address: string
+  managed_by: string
+  [k: string]: unknown
+}
+
+export interface PaginatedCustomersResponse {
+  customers: Customer[]
+  current_page: number
+  total_pages: number
+  page_size: number
+  total_count: number
+  [k: string]: unknown
+}
+
+export async function fetchCustomers(page: number, pageSize: number): Promise<PaginatedCustomersResponse> {
+  try {
+    const url = `/api/customers?page=${page}&page_size=${pageSize}`
+    const resp = await http.get<PaginatedCustomersResponse>(url)
+    return (resp && (resp as any).data) ?? resp
+  } catch (err: unknown) {
+    if (isAxiosLike(err)) {
+      const { message, status, body } = extractAxiosDetails(err)
+      throw new ApiError(message, status, body)
+    }
+    const anyErr = err as any
+    throw new ApiError(anyErr?.message ? String(anyErr.message) : 'Unknown error')
+  }
+}
+
+export async function createCustomer(payload: CustomerRequest): Promise<Customer> {
+  try {
+    const resp = await http.post<Customer>('/api/customers', payload)
+    return (resp && (resp as any).data) ?? resp
+  } catch (err: unknown) {
+    if (isAxiosLike(err)) {
+      const { message, status, body } = extractAxiosDetails(err)
+      throw new ApiError(message, status, body)
+    }
+    const anyErr = err as any
+    throw new ApiError(anyErr?.message ? String(anyErr.message) : 'Unknown error')
+  }
+}
+
+export async function updateCustomer(customerId: string, payload: CustomerRequest): Promise<Customer> {
+  try {
+    const url = `/api/customers/${customerId}`
+    const resp = await http.put<Customer>(url, payload)
+    return (resp && (resp as any).data) ?? resp
+  } catch (err: unknown) {
+    if (isAxiosLike(err)) {
+      const { message, status, body } = extractAxiosDetails(err)
+      throw new ApiError(message, status, body)
+    }
+    const anyErr = err as any
+    throw new ApiError(anyErr?.message ? String(anyErr.message) : 'Unknown error')
+  }
+}
+
+export async function deleteCustomer(customerId: string): Promise<void> {
+  try {
+    const url = `/api/customers/${customerId}`
+    await http.delete<void>(url)
+    return
   } catch (err: unknown) {
     if (isAxiosLike(err)) {
       const { message, status, body } = extractAxiosDetails(err)
