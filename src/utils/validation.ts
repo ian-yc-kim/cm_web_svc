@@ -32,6 +32,13 @@ export function validatePassword(value: string): string | null {
   return null
 }
 
+// Login-specific password validation: only require non-empty for login flows
+export function validateLoginPassword(value: string): string | null {
+  const v = String(value ?? '')
+  if (!v) return 'Password is required.'
+  return null
+}
+
 export interface ValidationResult {
   employee_id?: string | null
   employee_name?: string | null
@@ -43,5 +50,13 @@ export function validateSignupForm(payload: { employee_id: string; employee_name
     employee_id: validateEmployeeId(payload.employee_id),
     employee_name: validateEmployeeName(payload.employee_name),
     password: validatePassword(payload.password),
+  }
+}
+
+// Helper for login form validation
+export function validateLoginForm(payload: { employee_id: string; password: string }): ValidationResult {
+  return {
+    employee_id: validateEmployeeId(payload.employee_id),
+    password: validateLoginPassword(payload.password),
   }
 }
