@@ -12,9 +12,11 @@ export interface LoginResponse {
 }
 
 export interface SignupRequest {
-  email: string
+  // allow email-based or employee-based signup
+  email?: string
+  employee_id?: string
+  employee_name?: string
   password: string
-  name?: string
   [k: string]: unknown
 }
 
