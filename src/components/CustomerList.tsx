@@ -2,8 +2,14 @@ import React, { useEffect, useState } from 'react'
 import type { Customer, PaginatedCustomersResponse } from '../api/customerService'
 import * as customerService from '../api/customerService'
 import Pagination from './Pagination'
+import CustomerRow from './CustomerRow'
 
-export default function CustomerList(): JSX.Element {
+interface CustomerListProps {
+  reloadToken?: number
+  onChanged?: (type: 'created' | 'updated' | 'deleted', customer?: Customer) => void
+}
+
+export default function CustomerList({ reloadToken, onChanged }: CustomerListProps = {}): JSX.Element {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
@@ -40,7 +46,7 @@ export default function CustomerList(): JSX.Element {
     return () => {
       mounted = false
     }
-  }, [currentPage, pageSize])
+  }, [currentPage, pageSize, reloadToken])
 
   function handlePageChange(page: number): void {
     setCurrentPage(page)
@@ -52,12 +58,22 @@ export default function CustomerList(): JSX.Element {
     setCurrentPage(1)
   }
 
+  function handleSaved(updated: Customer): void {
+    setCustomers((prev) => prev.map((c) => (c.customer_id === updated.customer_id ? updated : c)))
+    onChanged?.('updated', updated)
+  }
+
+  function handleDeleted(id: string): void {
+    setCustomers((prev) => prev.filter((c) => c.customer_id !== id))
+    onChanged?.('deleted')
+  }
+
   return (
     <div>
       <h2>Customers</h2>
 
       <label htmlFor="pageSize">Page size: </label>
-      <select id="pageSize" value={pageSize} onChange={handlePageSizeChange} disabled={isLoading}>
+      <select id="pageSize" value={pageSize} onChange={handlePageSizeChange} disabled={isLoading} aria-label="page size">
         <option value={5}>5</option>
         <option value={10}>10</option>
         <option value={20}>20</option>
@@ -76,22 +92,17 @@ export default function CustomerList(): JSX.Element {
               <th>Contact</th>
               <th>Address</th>
               <th>Managed By</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {customers.length === 0 ? (
               <tr>
-                <td colSpan={5}>No customers</td>
+                <td colSpan={6}>No customers</td>
               </tr>
             ) : (
               customers.map((c) => (
-                <tr key={c.customer_id}>
-                  <td>{c.customer_id}</td>
-                  <td>{c.customer_name}</td>
-                  <td>{c.customer_contact}</td>
-                  <td>{c.customer_address}</td>
-                  <td>{c.managed_by}</td>
-                </tr>
+                <CustomerRow key={c.customer_id} customer={c} onSaved={handleSaved} onDeleted={handleDeleted} />
               ))
             )}
           </tbody>

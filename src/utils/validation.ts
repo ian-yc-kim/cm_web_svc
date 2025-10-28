@@ -60,3 +60,49 @@ export function validateLoginForm(payload: { employee_id: string; password: stri
     password: validateLoginPassword(payload.password),
   }
 }
+
+// ------------------------- Customer validators -------------------------
+
+export function validateCustomerName(value: string): string | null {
+  const v = String(value ?? '').trim()
+  if (!v) return 'Customer name is required.'
+  if (!validator.isLength(v, { min: 1, max: 100 })) return 'Customer name must be 1 to 100 characters long.'
+  return null
+}
+
+export function validateCustomerContact(value: string): string | null {
+  const v = String(value ?? '').trim()
+  if (!v) return 'Customer contact is required.'
+  if (!validator.isLength(v, { min: 1, max: 100 })) return 'Customer contact must be 1 to 100 characters long.'
+  return null
+}
+
+export function validateCustomerAddress(value: string): string | null {
+  const v = String(value ?? '').trim()
+  if (!v) return 'Customer address is required.'
+  if (!validator.isLength(v, { min: 1, max: 300 })) return 'Customer address must be 1 to 300 characters long.'
+  return null
+}
+
+export function validateManagedBy(value: string): string | null {
+  const v = String(value ?? '').trim()
+  if (!v) return 'Managed by is required.'
+  if (!validator.isLength(v, { min: 1, max: 100 })) return 'Managed by must be 1 to 100 characters long.'
+  return null
+}
+
+export interface CustomerValidationResult {
+  customer_name?: string | null
+  customer_contact?: string | null
+  customer_address?: string | null
+  managed_by?: string | null
+}
+
+export function validateCustomerForm(payload: { customer_name: string; customer_contact: string; customer_address: string; managed_by: string }): CustomerValidationResult {
+  return {
+    customer_name: validateCustomerName(payload.customer_name),
+    customer_contact: validateCustomerContact(payload.customer_contact),
+    customer_address: validateCustomerAddress(payload.customer_address),
+    managed_by: validateManagedBy(payload.managed_by),
+  }
+}
